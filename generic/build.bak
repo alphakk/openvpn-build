@@ -369,7 +369,7 @@ which "${WGET}" > /dev/null 2>&1 && WGET_MODE=1
 
 CONFIGOPTS=" \
 	--prefix=${TARGET_ROOT} \
-	--libdir=${TARGET_ROOT}lib \
+	--libdir=${TARGET_ROOT}/lib \
 	--host=${CHOST} \
 	--target=${CTARGET} \
 	--build=${CBUILD} \
