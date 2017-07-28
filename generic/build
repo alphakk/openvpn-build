@@ -191,17 +191,20 @@ build_dep() {
 		echo "Build openssl"
 		cd "${BUILDROOT}/openssl"* || die "cd openssl"
 
-		./Configure --prefix="/${TARGET_ROOT}" --cross-compile-prefix=${CHOST:+${CHOST}-} \
+		./Configure --prefix=${OPENSSL_PREFIX} --openssldir=${OPENSSL_DIR} --cross-compile-prefix=${CHOST:+${CHOST}-} \
 			$(empty_ifelse "${DO_STATIC}" shared no-dso) \
+			no-zlib no-comp \
 			$(CHOST="${VIRTUAL_CHOST}" "${SCRIPTROOT}/gentoo.config-0.9.8") \
 			${CFLAGS} ${LDFLAGS} \
-			no-multilib \
-			no-capieng \
-			--openssldir=/etc/ssl \
-			--libdir=/lib \
+#			no-multilib \
+#			no-capieng \
+#			--openssldir=/etc/ssl \
+#			--libdir=/lib \
+#			--prefix=/opt/openssl \
+#			--openssldir=/usr/local/ssl \
 			${EXTRA_OPENSSL_CONFIG} \
 			|| die "Configure openssl"
-		[ -n "${BUILD_FOR_WINDOWS}" ] && perl util/mkdef.pl crypto ssl NT update
+		[ -n "${BUILD_FOR_WINDOWS}" ] && perl ${BUILDROOT}/openssl-1.1.0f/util/mkdef.pl crypto ssl NT update
 		[ -z "${OPENSSL_SKIP_DEPEND}" ] && ${MAKE} depend
 		${MAKE} install INSTALL_PREFIX="${INSTALL_ROOT}" INSTALLTOP="/" MANDIR="/tmp" \
 			|| die "make openssl"
@@ -225,6 +228,7 @@ build_dep() {
 		[ -n "${SAVE_DEP_CACHE}" ] && depcache_save lzo
 	fi
 
+if [ -z "${NO_PKCS11}"]; then
 	if [ -z "${DO_STATIC}" ]; then
 	  if [ -n "${USE_DEP_CACHE}" ]; then
 		depcache_extract pkcs11-helper
@@ -236,14 +240,14 @@ build_dep() {
 			--disable-crypto-engine-nss \
 			OPENSSL_CFLAGS="${OPENSSL_CFLAGS}" \
 			OPENSSL_LIBS="${OPENSSL_LIBS}" \
-			|| die "Configure pkcs11-helper"
+#			die "Configure pkcs11-helper"
 		${MAKE} ${MAKEOPTS} ${MAKE_AUTOCONF_INSTALL_TARGET} DESTDIR="${INSTALL_ROOT}" \
 			|| die "make pkcs11-helper"
 
 		[ -n "${SAVE_DEP_CACHE}" ] && depcache_save pkcs11-helper
 	  fi
 	fi
-
+fi	
 	echo "tap-windows"
 	cp "${BUILDROOT}"/tap-windows-*/include/* "${OPENVPN_ROOT}/include" || die "tap-windows copy"
 
@@ -254,11 +258,13 @@ build_openvpn() {
 
 	echo "Build openvpn"
 	cd "${BUILDROOT}/openvpn-${OPENVPN_VERSION}" || die "cd openvpn"
-	./configure ${CONFIGOPTS} ${EXTRA_OPENVPN_CONFIG} \
-		$(empty_ifelse "${DO_STATIC}" --enable-pkcs11 --disable-plugins) \
-		--enable-lzo \
-		--with-special-build="${SPECIAL_BUILD}" \
-		|| die "Configure openvpn"
+	./configure \
+		OPENSSL_LIBS="${OPENSSL_LIBS}" OPENSSL_CFLAGS="${OPENSSL_CFLAGS}" \
+		${EXTRA_OPENVPN_CONFIG} \
+#		$(empty_ifelse "${DO_STATIC}" --enable-pkcs11 --disable-plugins) \
+#		--enable-lzo \
+#		--with-special-build="${SPECIAL_BUILD}" \
+#		|| die "Configure openvpn"
 	${MAKE} ${MAKEOPTS} ${MAKE_AUTOCONF_INSTALL_TARGET} DESTDIR="${OPENVPN_ROOT}" || die "make openvpn"
 
 	cd "${SCRIPTROOT}"
@@ -372,6 +378,7 @@ CONFIGOPTS=" \
 
 OPENVPN_ROOT="${IMAGEROOT}/openvpn"
 
+
 if [ -z "${DO_NO_STRIP}" ]; then
 	MAKE_AUTOCONF_INSTALL_TARGET="install-strip"
 else
@@ -380,10 +387,15 @@ fi
 
 # OpenVPN-GUI build expects the OPENSSL_CRYPTO_* variables to be set, even
 # though they were removed from openvpn/configure.ac by commit 31b0bebe.
-export OPENSSL_CRYPTO_CFLAGS="-I${OPENVPN_ROOT}/include"
-export OPENSSL_CRYPTO_LIBS="-L${OPENVPN_ROOT}/lib -lcrypto"
-export OPENSSL_CFLAGS="-I${OPENVPN_ROOT}/include"
-export OPENSSL_LIBS="-L${OPENVPN_ROOT}/lib -lssl -lcrypto"
+export OPENSSL_CRYPTO_CFLAGS="-I${OPENSSL_PREFIX}/include"
+export OPENSSL_CRYPTO_LIBS="-L${OPENSSL_PREFIX}/lib -lcrypto"
+#export OPENSSL_CFLAGS="-I${OPENVPN_ROOT}/include"
+
+export OPENSSL_PREFIX="/opt/openssl"
+export OPENSSL_DIR="/usr/local/ssl"
+
+export OPENSSL_CFLAGS="-I${OPENSSL_PREFIX}/include"
+export OPENSSL_LIBS="-L${OPENSSL_PREFIX}/lib -lssl -lcrypto"
 export LZO_CFLAGS="-I${OPENVPN_ROOT}/include"
 export LZO_LIBS="-L${OPENVPN_ROOT}/lib -llzo2"
 export PKCS11_HELPER_CFLAGS="-I${OPENVPN_ROOT}/include"
@@ -499,6 +511,17 @@ Usage: $0
 	--save-depcache=SUFFIX
 		Use or save a depcache tarball dir with the named suffix.
 __EOF__
+			exit 1
+			;;
+	esac
+	shift
+done
+
+main
+
+exit 0
+
+__
 			exit 1
 			;;
 	esac
