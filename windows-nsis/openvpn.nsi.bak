@@ -324,9 +324,11 @@ Section "${PACKAGE_NAME} User-Space Components" SecOpenVPNUserSpace
 
 	SetOutPath "$INSTDIR\doc"
 	File "INSTALL-win32.txt"
-
+<<<<<<< HEAD
 	File "${OPENVPN_ROOT_I686}\share\doc\openvpn\openvpn.8.html"
-
+=======
+	File "${OPENVPN_ROOT}\share\doc\openvpn\openvpn.8.html"
+>>>>>>> release/2.3
 
 	${If} ${SectionIsSelected} ${SecAddShortcutsWorkaround}
 		CreateDirectory "$SMPROGRAMS\${PACKAGE_NAME}\Documentation"
