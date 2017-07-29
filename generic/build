@@ -229,6 +229,7 @@ build_dep() {
 	fi
 
 if [ -z "${NO_PKCS11}"]; then
+	echo "Pkcs11 is comiling." >comile.log
 	if [ -z "${DO_STATIC}" ]; then
 	  if [ -n "${USE_DEP_CACHE}" ]; then
 		depcache_extract pkcs11-helper
@@ -246,12 +247,13 @@ if [ -z "${NO_PKCS11}"]; then
 
 		[ -n "${SAVE_DEP_CACHE}" ] && depcache_save pkcs11-helper
 	  fi
-	fi
-fi	
+  fi
+fi
 	echo "tap-windows"
 	cp "${BUILDROOT}"/tap-windows-*/include/* "${OPENVPN_ROOT}/include" || die "tap-windows copy"
 
 	cd "${SCRIPTROOT}"
+	echo "test mark"
 }
 
 build_openvpn() {
@@ -268,6 +270,7 @@ build_openvpn() {
 	${MAKE} ${MAKEOPTS} ${MAKE_AUTOCONF_INSTALL_TARGET} DESTDIR="${OPENVPN_ROOT}" || die "make openvpn"
 
 	cd "${SCRIPTROOT}"
+	echo "Openvpn building complete." >>compile.log
 }
 
 build_openvpn_gui() {
