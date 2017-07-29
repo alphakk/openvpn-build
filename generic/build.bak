@@ -206,7 +206,7 @@ build_dep() {
 			|| die "Configure openssl"
 		[ -n "${BUILD_FOR_WINDOWS}" ] && perl ${BUILDROOT}/openssl-${OPENSSL_VERSION}/util/mkdef.pl crypto ssl NT update
 		[ -z "${OPENSSL_SKIP_DEPEND}" ] && ${MAKE} depend
-		${MAKE} install INSTALL_PREFIX="${INSTALL_ROOT}"
+		${MAKE} install INSTALL_PREFIX="${INSTALL_ROOT}" \
 			|| die "make openssl"
 		rm -fr "${INSTALL_ROOT}/tmp"
 
