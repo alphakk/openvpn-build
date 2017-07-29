@@ -206,7 +206,7 @@ build_dep() {
 			|| die "Configure openssl"
 		[ -n "${BUILD_FOR_WINDOWS}" ] && perl ${BUILDROOT}/openssl-${OPENSSL_VERSION}/util/mkdef.pl crypto ssl NT update
 		[ -z "${OPENSSL_SKIP_DEPEND}" ] && ${MAKE} depend
-		${MAKE} install INSTALL_PREFIX="${INSTALL_ROOT}" INSTALLTOP="/" MANDIR="/tmp" \
+		${MAKE} install INSTALL_PREFIX="${INSTALL_ROOT}" \
 			|| die "make openssl"
 		rm -fr "${INSTALL_ROOT}/tmp"
 
@@ -262,7 +262,7 @@ build_openvpn() {
 	cd "${BUILDROOT}/openvpn-${OPENVPN_VERSION}" || die "cd openvpn"
 	./configure \
 		OPENSSL_LIBS="${OPENSSL_LIBS}" OPENSSL_CFLAGS="${OPENSSL_CFLAGS}" \
-		${EXTRA_OPENVPN_CONFIG} \
+		${CONFIGOPTS} ${EXTRA_OPENVPN_CONFIG} \
 #		$(empty_ifelse "${DO_STATIC}" --enable-pkcs11 --disable-plugins) \
 #		--enable-lzo \
 #		--with-special-build="${SPECIAL_BUILD}" \
@@ -371,12 +371,12 @@ echo "${CHOST:-$(gcc -dumpmachine)}" | grep mingw > /dev/null && BUILD_FOR_WINDO
 which "${WGET}" > /dev/null 2>&1 && WGET_MODE=1
 
 CONFIGOPTS=" \
-	--prefix=${TARGET_ROOT} \
+#	--prefix=${TARGET_ROOT} \
 	--libdir=${TARGET_ROOT}lib \
 	--host=${CHOST} \
 	--target=${CTARGET} \
 	--build=${CBUILD} \
-	--program-prefix='' \
+#	--program-prefix='' \
 "
 
 OPENVPN_ROOT="${IMAGEROOT}/openvpn"
